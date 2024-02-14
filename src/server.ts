@@ -2,6 +2,7 @@ import { createConnection } from 'typeorm'
 import config from './config/config'
 import dbConfig from './config/database'
 import app from './app'
+import './crontab'
 
 const { appName, port } = config
 createConnection(dbConfig).then(() => {

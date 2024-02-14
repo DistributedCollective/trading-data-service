@@ -1,6 +1,6 @@
 import express, { NextFunction, Request, Response } from 'express'
 import { buildCheckFunction, validationResult } from 'express-validator'
-import { createUser, getAll, getUser } from '../controllers/user.controller'
+import { createTicker, getAll, getTicker } from '../controllers/ticker.controller'
 import asyncMiddleware from '../utils/asyncMiddleware'
 import { InputValidateError } from '../errorHandlers/baseError'
 
@@ -20,7 +20,7 @@ router.post(
         throw new InputValidateError(errors.array())
       }
       req.log.info(req.body, 'handling create user request')
-      const user = await createUser(req.body)
+      const user = await createTicker(req.body)
       res.status(200).json(user)
     } catch (error) {
       next(error)
@@ -51,7 +51,7 @@ router.get(
         throw new InputValidateError(errors.array())
       }
       req.log.info(req.body, 'handling user request')
-      const response = await getUser(req.params.id)
+      const response = await getTicker(req.params.id)
       res.send(response)
     } catch (error) {
       next(error)

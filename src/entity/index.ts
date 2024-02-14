@@ -1,2 +1,3 @@
-import { User } from './User'
-export { User }
+import { Ticker } from './Ticker'
+import { Trade } from './Trade'
+export { Ticker, Trade }
