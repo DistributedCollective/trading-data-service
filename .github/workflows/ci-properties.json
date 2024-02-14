@@ -1,0 +1,25 @@
+{
+  "app_name": "trading-data-service",
+  "aws_region": "us-east-2",
+  "k8s_cluster_name": "k8-mainnet",
+  "registry": "docker.io",
+  "image_name": "sovryn/trading-data-service",
+  "prod_branch": "main",
+  "dev_branch": "development",
+  "dockerfile_path": ".",
+  "APP_ENV_VARS": {
+    "APP_NAME": "trading-data-service",
+    "LOG_LEVEL": "debug",
+    "PORT": "3000",
+    "POSTGRES_PORT": "5432",
+    "POSTGRES_DB": "trading-data-main"
+  },
+  "DEV_ENV_VARS": {
+    "NODE_ENV": "test",
+    "INGRESS_HOSTNAME": "trading-data-service.test.sovryn.app"
+  },
+  "PROD_ENV_VARS": {
+    "NODE_ENV": "production",
+    "INGRESS_HOSTNAME": "trading-data-service.sovryn.app"
+  }
+}
