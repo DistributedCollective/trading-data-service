@@ -11,15 +11,19 @@
     "APP_NAME": "trading-data-service",
     "LOG_LEVEL": "debug",
     "PORT": "3000",
-    "POSTGRES_PORT": "5432",
-    "POSTGRES_DB": "trading-data-test"
+    "POSTGRES_PORT": "5432"
   },
   "DEV_ENV_VARS": {
-    "NODE_ENV": "test",
-    "INGRESS_HOSTNAME": "trading-data-service.test.sovryn.app"
+    "NODE_ENV": "development",
+    "INGRESS_HOSTNAME": "trading-data-service.test.sovryn.app",
+    "POSTGRES_DB": "trading-data-test",
+    "SUBGRAPH_URL": "https://subgraph.test.sovryn.app/subgraphs/name/DistributedCollective/sovryn-subgraph",
+    "IS_TESTNET": "true"
   },
   "PROD_ENV_VARS": {
     "NODE_ENV": "production",
-    "INGRESS_HOSTNAME": "trading-data-service.sovryn.app"
+    "INGRESS_HOSTNAME": "trading-data-service.sovryn.app",
+    "POSTGRES_DB": "trading-data-main",
+    "SUBGRAPH_URL": "https://subgraph.sovryn.app/subgraphs/name/DistributedCollective/sovryn-subgraph"
   }
 }

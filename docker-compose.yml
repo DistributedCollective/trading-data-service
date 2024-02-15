@@ -30,6 +30,8 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=trading-data
+      - SUBGRAPH_URL=https://subgraph.test.sovryn.app/subgraphs/name/DistributedCollective/sovryn-subgraph
+      - IS_TESTNET=true
     env_file:
       - .env
     ports:

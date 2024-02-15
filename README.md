@@ -9,23 +9,15 @@ Provides public endpoints with trading data history.
 
 ## Running the application
 
-To run the application, you need to have Docker and Docker Compose installed. Then you can run the following command:
+To run the application, you need to have Docker and Docker Compose installed. Then you can run the following commands:
+
+`cp .env.example .env`
 
 `docker-compose up`
 
 This will start the application and the database in docker containers.
 
 Application will be available at `http://localhost:3000`.
-
-You may need to create a `.env` file in the root of the project with the following content:
-
-```
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=postgres
-POSTGRES_DB=trading-data
-POSTGRES_HOST=sov-postgres
-POSTGRES_PORT=5432
-```
 
 ## Database Migrations
 

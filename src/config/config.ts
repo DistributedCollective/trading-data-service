@@ -61,6 +61,29 @@ const config = convict({
     format: String,
     default: 'trading-data',
     env: 'POSTGRES_DB'
+  },
+  subgraph: {
+    url: {
+      doc: 'The subgraph url.',
+      format: String,
+      default: null,
+      env: 'SUBGRAPH_URL',
+      arg: 'subgraph-url'
+    },
+    errorPolicy: {
+      doc: 'The subgraph error policy.',
+      format: ['none', 'ignore', 'all'],
+      default: 'all',
+      env: 'SUBGRAPH_ERROR_POLICY',
+      arg: 'subgraph-error-policy'
+    }
+  },
+  isTestnet: {
+    doc: 'The testnet flag.',
+    format: Boolean,
+    default: false,
+    env: 'IS_TESTNET',
+    arg: 'testnet'
   }
 })
 
