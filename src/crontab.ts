@@ -1,11 +1,11 @@
 import { CronJob } from 'cron'
+import { tickerSearchTask } from './tasks/ticker-search-task'
 
-export const tickerSearchJob = CronJob.from({
-  // every minute
-  cronTime: '0 * * * * *',
-  onTick: () => { console.log('tickerSearchJob') },
+export const tickerSearchCron = CronJob.from({
+  // todo: it runs every 15 seconds for testing, change to once an hour or day in production
+  cronTime: '*/15 * * * * *',
+  onTick: tickerSearchTask,
+  // prevent the job from firing automatically on creation
+  // (we want to start it manually after the database is up in the server.ts file)
   start: false
 })
-
-// todo: start job after app is ready and initial data is put into db
-tickerSearchJob.start()
