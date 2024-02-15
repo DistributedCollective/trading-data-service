@@ -12,7 +12,7 @@
     "LOG_LEVEL": "debug",
     "PORT": "3000",
     "POSTGRES_PORT": "5432",
-    "POSTGRES_DB": "trading-data-main"
+    "POSTGRES_DB": "trading-data-test"
   },
   "DEV_ENV_VARS": {
     "NODE_ENV": "test",
