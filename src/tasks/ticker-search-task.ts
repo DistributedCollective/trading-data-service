@@ -1,6 +1,9 @@
 import { tickerSearchCron } from '../crontab'
 import { TaskType } from '../entity/Task'
 import { getLastTaskRun, setLastTaskRun } from '../models/task.model'
+import { createTicker, getTickers } from '../models/ticker.model'
+import { queryTokens } from '../utils/subgraph'
+import config from '../config/config'
 
 export async function tickerSearchTask (): Promise<void> {
   const now = new Date()
@@ -12,6 +15,29 @@ export async function tickerSearchTask (): Promise<void> {
 
   console.log('tickerSearchTask started: ', lastRun)
   // TODO: implement the ticker search task
+
+  const [tokens, tickers] = await Promise.all([queryTokens(), getTickers()])
+
+  const newTokens = tokens.filter(
+    (token) =>
+      token.symbol != null &&
+      token.id != null &&
+      tickers.find(
+        (ticker) => ticker.address.toLowerCase() === token.id.toLowerCase()
+      ) == null
+  )
+
+  newTokens.map(
+    async (token) =>
+      await createTicker({
+        symbol: token.symbol,
+        name: token.name,
+        chainId: config.isTestnet ? 31 : 30,
+        address: token.id,
+        decimals: token.decimals,
+        description: ''
+      })
+  )
 
   // if successful, update the last run time (at the beginning of the function)
   await setLastTaskRun(TaskType.TICKER_SEARCH, now)
