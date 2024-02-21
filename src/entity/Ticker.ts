@@ -19,7 +19,7 @@ export class Ticker extends AbstractBaseEntity {
   @Column()
   chainId!: number
 
-  @Column({ unique: true })
+  @Column()
   address!: string
 
   @Column({ nullable: true })

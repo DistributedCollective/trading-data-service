@@ -14,16 +14,18 @@ export async function tickerSearchTask (): Promise<void> {
   const lastRun = await getLastTaskRun(TaskType.TICKER_SEARCH)
 
   console.log('tickerSearchTask started: ', lastRun)
-  // TODO: implement the ticker search task
 
   const [tokens, tickers] = await Promise.all([queryTokens(), getTickers()])
 
+  const chainId = config.isTestnet ? 31 : 30
   const newTokens = tokens.filter(
     (token) =>
       token.symbol != null &&
       token.id != null &&
       tickers.find(
-        (ticker) => ticker.address.toLowerCase() === token.id.toLowerCase()
+        (ticker) =>
+          ticker.address.toLowerCase() === token.id.toLowerCase() &&
+          ticker.chainId === chainId
       ) == null
   )
 
@@ -32,7 +34,7 @@ export async function tickerSearchTask (): Promise<void> {
       await createTicker({
         symbol: token.symbol,
         name: token.name,
-        chainId: config.isTestnet ? 31 : 30,
+        chainId,
         address: token.id,
         decimals: token.decimals,
         description: ''
