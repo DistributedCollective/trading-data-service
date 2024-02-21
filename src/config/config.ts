@@ -66,7 +66,7 @@ const config = convict({
     url: {
       doc: 'The subgraph url.',
       format: String,
-      default: null,
+      default: '',
       env: 'SUBGRAPH_URL',
       arg: 'subgraph-url'
     },
