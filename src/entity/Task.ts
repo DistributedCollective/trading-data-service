@@ -1,4 +1,8 @@
-import { Entity, Column, Index } from 'typeorm'
+import {
+  Entity,
+  Column,
+  Index
+} from 'typeorm'
 
 import { AbstractBaseEntity } from './AbstractBase.entity'
 

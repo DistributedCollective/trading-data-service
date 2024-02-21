@@ -1,4 +1,9 @@
-import { Entity, Column, Unique, OneToMany } from 'typeorm'
+import {
+  Entity,
+  Column,
+  Unique,
+  OneToMany
+} from 'typeorm'
 
 import { Length } from 'class-validator'
 
@@ -8,7 +13,7 @@ import { Trade } from './Trade'
 @Entity()
 @Unique(['chainId', 'address'])
 export class Ticker extends AbstractBaseEntity {
-  @Column()
+  @Column({ unique: true })
   @Length(2, 10)
   symbol!: string
 
@@ -17,9 +22,10 @@ export class Ticker extends AbstractBaseEntity {
   name!: string
 
   @Column()
+  @Length(1, 8)
   chainId!: number
 
-  @Column({ unique: true })
+  @Column({ nullable: true })
   address!: string
 
   @Column({ nullable: true })
@@ -28,9 +34,9 @@ export class Ticker extends AbstractBaseEntity {
   @Column({ default: 18 })
   decimals!: number
 
-  @OneToMany(() => Trade, (trade) => trade.baseTicker)
+  @OneToMany(() => Trade, trade => trade.baseTicker)
   baseTrades!: Trade[]
 
-  @OneToMany(() => Trade, (trade) => trade.quoteTicker)
+  @OneToMany(() => Trade, trade => trade.quoteTicker)
   quoteTrades!: Trade[]
 }
