@@ -23,7 +23,7 @@ Application will be available at `http://localhost:3000`.
 
 To make any changes to a database when running application in docker container, you first need to ssh into the container with the following command:
 
-`docker exec -it trading-data-service sh`
+`docker exec -it trading-data-service sh` OR `(trading-data-service_trading-data-service_1)`
 
 Then you can generate new migration from the changes to the entity models by running:
 
