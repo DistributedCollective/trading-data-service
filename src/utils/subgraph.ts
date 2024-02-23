@@ -58,15 +58,15 @@ export const queryTrades = async (startTime: number, endTime: number) => {
         }
       }
     }
-  `);
+  `)
 
   return await client
     .request<{ trades: Trade[] }>({
-      document,
-      variables: {
-        startTime: (Math.floor(startTime / 1e3) | 0),
-        endTime: (Math.floor(endTime / 1e3) | 0)
-      }
-    })
-    .then((res) => res.trades);
-};
+    document,
+    variables: {
+      startTime: (Math.floor(startTime / 1e3) | 0),
+      endTime: (Math.floor(endTime / 1e3) | 0)
+    }
+  })
+    .then((res) => res.trades)
+}

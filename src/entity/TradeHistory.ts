@@ -1,24 +1,24 @@
-import { Entity, PrimaryGeneratedColumn, Column, Index } from 'typeorm';
-import { AbstractBaseEntity } from './AbstractBase.entity';
+import { Entity, PrimaryGeneratedColumn, Column, Index } from 'typeorm'
+import { AbstractBaseEntity } from './AbstractBase.entity'
 
 @Entity()
 @Index(['baseToken', 'quoteToken', 'timestamp'])
 export class TradeHistory extends AbstractBaseEntity {
   @PrimaryGeneratedColumn()
-  id!: number;
+  id!: number
 
   @Column()
-  timestamp!: number;
+  timestamp!: number
 
   @Column()
-  baseToken!: string;
+  baseToken!: string
 
   @Column()
-  quoteToken!: string;
+  quoteToken!: string
 
   @Column({ type: 'decimal', precision: 45, scale: 32 })
-  price!: string;
+  price!: string
 
   @Column({ type: 'decimal', precision: 45, scale: 32 })
-  amount!: string;
+  amount!: string
 }
