@@ -3,7 +3,7 @@ import config from './config/config'
 import dbConfig from './config/database'
 import app from './app'
 import './crontab'
-import './scheduledJob'
+import { getTradesCron } from './tasks/trade-history-task'
 import { tickerSearchTask } from './tasks/ticker-search-task'
 
 const { appName, port } = config
@@ -16,6 +16,10 @@ createConnection(dbConfig)
 
     tickerSearchTask().catch((er) =>
       console.error('tickerSearchTask init failed:', er)
+    )
+
+    getTradesCron().catch((er) =>
+      console.error('getTradesCron init failed:', er)
     )
   })
   .catch((err) => {

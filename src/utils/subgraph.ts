@@ -42,7 +42,7 @@ interface Trade {
   loanToken: Token
 }
 
-export const queryTrades = async (startTime: number, endTime: number) => {
+export const queryTrades = async (startTime: number, endTime: number): Promise<Trade[]> => {
   const document = parse(gql`
     query ($startTime: Int!, $endTime: Int!) {
       trades(where: { timestamp_gte: $startTime, timestamp_lte: $endTime }) {

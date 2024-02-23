@@ -1,11 +1,11 @@
 import { CronJob } from 'cron'
-import { queryTrades } from './utils/subgraph'
 import { getRepository } from 'typeorm'
-import { TradeHistory } from './entity/TradeHistory'
+import { queryTrades } from '../utils/subgraph'
+import { TradeHistory } from '../entity'
 
 let lastTimestamp: number | null = null
 
-const getTradesCron = async () => {
+export const getTradesCron = async (): Promise<void> => {
   try {
     const currentTimestamp = Date.now()
 
