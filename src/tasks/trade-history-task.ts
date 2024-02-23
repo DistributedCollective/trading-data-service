@@ -1,48 +1,65 @@
-import { CronJob } from 'cron'
-import { getRepository } from 'typeorm'
-import { queryTrades } from '../utils/subgraph'
-import { TradeHistory } from '../entity'
+import { getRepository } from 'typeorm';
+import { queryTrades } from '../utils/subgraph';
+import { setLastTaskRun } from '../models/task.model';
+import { TaskType } from '../entity/Task';
+import { tradeSearchCron } from '../crontab';
+import { Ticker, Trade } from '../entity';
+import dayjs from 'dayjs';
 
-let lastTimestamp: number | null = null
+let lastTimestamp: dayjs.Dayjs | null = null;
 
-export const getTradesCron = async (): Promise<void> => {
+export const getTradesTask = async (): Promise<void> => {
+  const currentTimestamp = dayjs();
+  tradeSearchCron.stop();
+
   try {
-    const currentTimestamp = Date.now()
-
     // If it's the first execution, set lastTimestamp and return
     if (lastTimestamp === null) {
-      lastTimestamp = currentTimestamp
-      console.log('getTradesCron() executed for the first time.')
-      return
+      lastTimestamp = currentTimestamp.subtract(24, 'hours');
+      console.log('getTradesTask() executed for the first time.');
     }
 
     // Calculate the time difference
-    const timeDifference = currentTimestamp - lastTimestamp
-    console.log(`getTradesCron() executed. Time since last execution: ${timeDifference} ms`)
+    const timeDifference = currentTimestamp.diff(lastTimestamp, 'ms');
+    console.log(`getTradesTask() executed. Time since last execution: ${timeDifference} ms`);
 
-    const trades = await queryTrades(lastTimestamp, currentTimestamp)
+    const trades = await queryTrades(lastTimestamp, currentTimestamp);
 
-    // Save trades to TradeHistory table
-    const tradeHistoryRepository = getRepository(TradeHistory)
+    // Save trades to tradeRepository table
+    const tradeRepository = getRepository(Trade);
+    const tickerRepository = getRepository(Ticker);
 
     for (const trade of trades) {
-      await tradeHistoryRepository.save({
-        timestamp: trade.timestamp,
-        baseToken: trade.collateralToken.id,
-        quoteToken: trade.loanToken.id,
-        price: trade.entryPrice,
-        amount: trade.positionSize
-      })
+      try {
+        const { timestamp, _return, _amount, _toToken, _fromToken } = trade;
+
+        // Fetch Ticker entities based on token addresses
+        const baseTicker = await tickerRepository.findOne({ address: _toToken.id });
+        const quoteTicker = await tickerRepository.findOne({ address: _fromToken.id });
+
+        if (baseTicker && quoteTicker) {
+          await tradeRepository.save({
+            // baseTicker: baseTicker,
+            // quoteTicker: quoteTicker,
+            date: dayjs.unix(timestamp).toDate(),
+            baseAmount: _return,
+            quoteAmount: _amount,
+            rate: parseFloat(_return) / parseFloat(_amount),
+          });
+        } else {
+          console.error('Ticker not found for trade:', trade);
+        }
+      } catch (error) {
+        console.error('Error saving trade:', error);
+      }
     }
 
     // Update lastTimestamp for the next execution
-    lastTimestamp = currentTimestamp
+    lastTimestamp = currentTimestamp;
   } catch (error) {
-    console.error('Error executing the job:', error)
+    console.error('Error executing the job:', error);
   }
-}
 
-// Create a CronJob to execute the getTradesCron func every minute
-const job = new CronJob('* * * * *', getTradesCron)
-
-job.start()
+  await setLastTaskRun(TaskType.TRADE_SEARCH, currentTimestamp.toDate());
+  tradeSearchCron.start();
+};

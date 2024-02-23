@@ -4,6 +4,7 @@ import { ErrorPolicy } from 'graphql-request/build/esm/types'
 import config from '../config/config'
 
 import { cleanUrl } from './helpers'
+import dayjs from 'dayjs'
 
 export const client = new GraphQLClient(cleanUrl(config.subgraph.url), {
   errorPolicy: config.subgraph.errorPolicy as ErrorPolicy
@@ -35,25 +36,28 @@ export const queryTokens = async (): Promise<Token[]> => {
 
 interface Trade {
   id: string
-  positionSize: string
   timestamp: number
-  entryPrice: string
-  collateralToken: Token
-  loanToken: Token
+  _amount: string
+  _return: string
+  _fromToken: Token
+  _toToken: Token
 }
 
-export const queryTrades = async (startTime: number, endTime: number): Promise<Trade[]> => {
+export const queryTrades = async (
+  startTime: dayjs.Dayjs,
+  endTime: dayjs.Dayjs
+): Promise<Trade[]> => {
   const document = parse(gql`
     query ($startTime: Int!, $endTime: Int!) {
-      trades(where: { timestamp_gte: $startTime, timestamp_lte: $endTime }) {
-        id
-        positionSize
+      conversions(where: { timestamp_gt: $startTime, timestamp_lte: $endTime }) {
         timestamp
-        entryPrice
-        collateralToken {
+        id
+        _amount
+        _return
+        _fromToken {
           id
         }
-        loanToken {
+        _toToken {
           id
         }
       }
@@ -61,12 +65,12 @@ export const queryTrades = async (startTime: number, endTime: number): Promise<T
   `)
 
   return await client
-    .request<{ trades: Trade[] }>({
+    .request<{ conversions: Trade[] }>({
     document,
     variables: {
-      startTime: (Math.floor(startTime / 1e3) | 0),
-      endTime: (Math.floor(endTime / 1e3) | 0)
+      startTime: startTime.unix(),
+      endTime: endTime.unix(),
     }
   })
-    .then((res) => res.trades)
+    .then((res) => res.conversions)
 }
