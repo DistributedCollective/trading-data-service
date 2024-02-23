@@ -69,7 +69,7 @@ export const queryTrades = async (
     document,
     variables: {
       startTime: startTime.unix(),
-      endTime: endTime.unix(),
+      endTime: endTime.unix()
     }
   })
     .then((res) => res.conversions)
