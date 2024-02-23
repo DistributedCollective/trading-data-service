@@ -32,3 +32,41 @@ export const queryTokens = async (): Promise<Token[]> => {
     .request<{ tokens: Token[] }>({ document })
     .then((res) => res.tokens)
 }
+
+interface Trade {
+  id: string
+  positionSize: string
+  timestamp: number
+  entryPrice: string
+  collateralToken: Token
+  loanToken: Token
+}
+
+export const queryTrades = async (startTime: number, endTime: number) => {
+  const document = parse(gql`
+    query ($startTime: Int!, $endTime: Int!) {
+      trades(where: { timestamp_gte: $startTime, timestamp_lte: $endTime }) {
+        id
+        positionSize
+        timestamp
+        entryPrice
+        collateralToken {
+          id
+        }
+        loanToken {
+          id
+        }
+      }
+    }
+  `);
+
+  return await client
+    .request<{ trades: Trade[] }>({
+      document,
+      variables: {
+        startTime: (Math.floor(startTime / 1e3) | 0),
+        endTime: (Math.floor(endTime / 1e3) | 0)
+      }
+    })
+    .then((res) => res.trades);
+};

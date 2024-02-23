@@ -1,5 +1,5 @@
 import { ConnectionOptions } from 'typeorm'
-import { Task, Ticker, Trade } from '../entity'
+import { Task, Ticker, Trade, TradeHistory } from '../entity'
 
 import config from './config'
 
@@ -12,7 +12,7 @@ const dbConfig: ConnectionOptions = {
   username: postgresUser,
   password: postgresPassword,
   database: postgresDatabase,
-  entities: [Ticker, Trade, Task],
+  entities: [Ticker, Trade, Task, TradeHistory],
   migrations: [
     'src/migration/**/*.ts'
   ],
