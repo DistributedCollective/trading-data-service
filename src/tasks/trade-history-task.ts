@@ -17,45 +17,39 @@ export const getTradesTask = async (): Promise<void> => {
     if (lastTimestamp === null) {
       lastTimestamp = currentTimestamp.subtract(24, 'hours')
       console.log('getTradesTask() executed for the first time.')
-    }
+    } else {
+      // Calculate the time difference
+      const timeDifference = currentTimestamp.diff(lastTimestamp, 'ms')
+      console.log(`getTradesTask() executed. Time since last execution: ${timeDifference} ms`)
 
-    // Calculate the time difference
-    const timeDifference = currentTimestamp.diff(lastTimestamp, 'ms')
-    console.log(`getTradesTask() executed. Time since last execution: ${timeDifference} ms`)
+      const trades = await queryTrades(lastTimestamp, currentTimestamp)
+      // Save trades to tradeRepository table
+      const tradeRepository = getRepository(Trade)
+      const tickerRepository = getRepository(Ticker)
 
-    const trades = await queryTrades(lastTimestamp, currentTimestamp)
+      for (const trade of trades) {
+        try {
+          const { timestamp, _return, _amount, _fromToken, _toToken } = trade
+          // Fetch Ticker entities based on token addresses
+          const baseTicker = await tickerRepository.findOne({ address: _toToken.id })
+          const quoteTicker = await tickerRepository.findOne({ address: _fromToken.id })
 
-    // Save trades to tradeRepository table
-    const tradeRepository = getRepository(Trade)
-    const tickerRepository = getRepository(Ticker)
-
-    for (const trade of trades) {
-      try {
-        const { timestamp, _return, _amount, _toToken, _fromToken } = trade
-
-        // Fetch Ticker entities based on token addresses
-        const baseTicker = await tickerRepository.findOne({ address: _toToken.id })
-        const quoteTicker = await tickerRepository.findOne({ address: _fromToken.id })
-
-        if ((baseTicker != null) && (quoteTicker != null)) {
           await tradeRepository.save({
-            // baseTicker: baseTicker,
-            // quoteTicker: quoteTicker,
             date: dayjs.unix(timestamp).toDate(),
             baseAmount: _return,
             quoteAmount: _amount,
-            rate: parseFloat(_return) / parseFloat(_amount)
+            rate: parseFloat(_return) / parseFloat(_amount),
+            baseTicker: baseTicker,
+            quoteTicker: quoteTicker
           })
-        } else {
-          console.error('Ticker not found for trade:', trade)
+        } catch (error) {
+          console.error('Error saving trade:', error)
         }
-      } catch (error) {
-        console.error('Error saving trade:', error)
       }
-    }
 
-    // Update lastTimestamp for the next execution
-    lastTimestamp = currentTimestamp
+      // Update lastTimestamp for the next execution
+      lastTimestamp = currentTimestamp
+    }
   } catch (error) {
     console.error('Error executing the job:', error)
   }
