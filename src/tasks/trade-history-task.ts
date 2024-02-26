@@ -1,16 +1,19 @@
 import { getRepository } from 'typeorm'
 import { queryTrades } from '../utils/subgraph'
-import { setLastTaskRun } from '../models/task.model'
+import { getLastTaskRun, setLastTaskRun } from '../models/task.model'
 import { TaskType } from '../entity/Task'
 import { tradeSearchCron } from '../crontab'
 import { Ticker, Trade } from '../entity'
 import dayjs from 'dayjs'
-
-let lastTimestamp: dayjs.Dayjs | null = null
+import config from '../config/config'
 
 export const getTradesTask = async (): Promise<void> => {
   const currentTimestamp = dayjs()
   tradeSearchCron.stop()
+
+  const chainId = config.isTestnet ? 31 : 30
+
+  let lastTimestamp = await getLastTaskRun(TaskType.TRADE_SEARCH).then(value => (value != null) ? dayjs(value) : null)
 
   try {
     // If it's the first execution, set lastTimestamp and return
@@ -24,7 +27,6 @@ export const getTradesTask = async (): Promise<void> => {
     console.log(`getTradesTask() executed. Time since last execution: ${timeDifference} ms`)
 
     const trades = await queryTrades(lastTimestamp, currentTimestamp)
-    console.log('trades', trades)
 
     // Save trades to tradeRepository table
     const tradeRepository = getRepository(Trade)
@@ -35,32 +37,28 @@ export const getTradesTask = async (): Promise<void> => {
       const { timestamp, _return, _amount, _fromToken, _toToken } = trade
       const rate = parseFloat((Number(_return) / Number(_amount)).toFixed(9))
 
-      const baseTicker = await tickerRepository.findOne({ address: _toToken.id })
-      const quoteTicker = await tickerRepository.findOne({ address: _fromToken.id })
+      const baseTicker = await tickerRepository.findOne({ address: _toToken.id, chainId })
+      const quoteTicker = await tickerRepository.findOne({ address: _fromToken.id, chainId })
 
-      console.log('baseTicker', baseTicker)
-      console.log('quoteTicker', quoteTicker)
-
-      try {
-        await tradeRepository.save({
-          date: dayjs.unix(timestamp).toDate(),
-          baseAmount: _return,
-          quoteAmount: _amount,
-          rate: rate,
-          baseTicker: baseTicker,
-          quoteTicker: quoteTicker
-        })
-      } catch (error) {
-        console.error('Error saving trade:', error)
+      if ((baseTicker == null) || (quoteTicker == null)) {
+        console.error('Ticker not found for trade:', trade)
+        continue
       }
+
+      await tradeRepository.save({
+        date: dayjs.unix(timestamp).toDate(),
+        baseAmount: _return,
+        quoteAmount: _amount,
+        rate: rate,
+        baseTicker: baseTicker,
+        quoteTicker: quoteTicker
+      })
     }
 
-    // Update lastTimestamp for the next execution
-    lastTimestamp = currentTimestamp
+    await setLastTaskRun(TaskType.TRADE_SEARCH, currentTimestamp.toDate())
   } catch (error) {
     console.error('Error executing the job:', error)
   }
 
-  await setLastTaskRun(TaskType.TRADE_SEARCH, currentTimestamp.toDate())
   tradeSearchCron.start()
 }

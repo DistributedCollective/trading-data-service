@@ -14,13 +14,10 @@ createConnection(dbConfig)
       console.log(`${appName} Server Now Listening on ${port}. Stay Sovryn.`)
     )
 
-    tickerSearchTask().catch((er) =>
-      console.error('tickerSearchTask init failed:', er)
-    )
-
-    getTradesTask().catch((er) =>
-      console.error('getTradesTask init failed:', er)
-    )
+    Promise.allSettled([
+      tickerSearchTask(),
+      getTradesTask()
+    ]).catch((err) => console.error('Error in tasks', err))
   })
   .catch((err) => {
     console.log('Unable to connect to db', err)
