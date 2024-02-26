@@ -33,7 +33,7 @@ export const getTradesTask = async (): Promise<void> => {
             date: dayjs.unix(timestamp).toDate(),
             baseAmount: _return,
             quoteAmount: _amount,
-            rate: parseFloat(_return) / parseFloat(_amount),
+            rate: parseFloat(_return) / parseFloat(_amount)
           })
         } catch (error) {
           console.error('Error saving trade:', error)
