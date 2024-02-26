@@ -17,32 +17,36 @@ export const getTradesTask = async (): Promise<void> => {
     if (lastTimestamp === null) {
       lastTimestamp = currentTimestamp.subtract(24, 'hours')
       console.log('getTradesTask() executed for the first time.')
-    } else {
-      // Calculate the time difference
-      const timeDifference = currentTimestamp.diff(lastTimestamp, 'ms')
-      console.log(`getTradesTask() executed. Time since last execution: ${timeDifference} ms`)
-
-      const trades = await queryTrades(lastTimestamp, currentTimestamp)
-      // Save trades to tradeRepository table
-      const tradeRepository = getRepository(Trade)
-
-      for (const trade of trades) {
-        try {
-          const { timestamp, _return, _amount } = trade
-          await tradeRepository.save({
-            date: dayjs.unix(timestamp).toDate(),
-            baseAmount: _return,
-            quoteAmount: _amount,
-            rate: parseFloat(_return) / parseFloat(_amount)
-          })
-        } catch (error) {
-          console.error('Error saving trade:', error)
-        }
-      }
-
-      // Update lastTimestamp for the next execution
-      lastTimestamp = currentTimestamp
     }
+
+    // Calculate the time difference
+    const timeDifference = currentTimestamp.diff(lastTimestamp, 'ms')
+    console.log(`getTradesTask() executed. Time since last execution: ${timeDifference} ms`)
+
+    const trades = await queryTrades(lastTimestamp, currentTimestamp)
+
+    // Save trades to tradeRepository table
+    const tradeRepository = getRepository(Trade)
+
+    for (const trade of trades) {
+      // Fetch Ticker entities based on token addresses
+      const { timestamp, _return, _amount } = trade
+      const rate = parseFloat((Number(_return) / Number(_amount)).toFixed(9))
+
+      try {
+        await tradeRepository.save({
+          date: dayjs.unix(timestamp).toDate(),
+          baseAmount: _return,
+          quoteAmount: _amount,
+          rate: rate
+        })
+      } catch (error) {
+        console.error('Error saving trade:', error)
+      }
+    }
+
+    // Update lastTimestamp for the next execution
+    lastTimestamp = currentTimestamp
   } catch (error) {
     console.error('Error executing the job:', error)
   }
