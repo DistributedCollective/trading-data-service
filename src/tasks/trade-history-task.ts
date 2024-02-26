@@ -3,7 +3,7 @@ import { queryTrades } from '../utils/subgraph'
 import { setLastTaskRun } from '../models/task.model'
 import { TaskType } from '../entity/Task'
 import { tradeSearchCron } from '../crontab'
-import { Ticker, Trade } from '../entity'
+import { Trade } from '../entity'
 import dayjs from 'dayjs'
 
 let lastTimestamp: dayjs.Dayjs | null = null
@@ -25,22 +25,15 @@ export const getTradesTask = async (): Promise<void> => {
       const trades = await queryTrades(lastTimestamp, currentTimestamp)
       // Save trades to tradeRepository table
       const tradeRepository = getRepository(Trade)
-      const tickerRepository = getRepository(Ticker)
 
       for (const trade of trades) {
         try {
-          const { timestamp, _return, _amount, _fromToken, _toToken } = trade
-          // Fetch Ticker entities based on token addresses
-          const baseTicker = await tickerRepository.findOne({ address: _toToken.id })
-          const quoteTicker = await tickerRepository.findOne({ address: _fromToken.id })
-
+          const { timestamp, _return, _amount } = trade
           await tradeRepository.save({
             date: dayjs.unix(timestamp).toDate(),
             baseAmount: _return,
             quoteAmount: _amount,
             rate: parseFloat(_return) / parseFloat(_amount),
-            baseTicker: baseTicker,
-            quoteTicker: quoteTicker
           })
         } catch (error) {
           console.error('Error saving trade:', error)
